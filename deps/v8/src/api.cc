@@ -6277,6 +6277,14 @@ void v8::V8::ShutdownPlatform() {
   i::V8::ShutdownPlatform();
 }
 
+void v8::V8::EnsureInitialized() {
+  i::V8::EnsureInitialized();
+}
+
+void v8::V8::ForkingCleanup() {
+  i::V8::ForkingCleanup();
+}
+
 
 bool v8::V8::Initialize() {
   i::V8::Initialize();

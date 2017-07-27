@@ -7951,6 +7951,9 @@ class V8_EXPORT V8 {
    * embedder.
    */
   static bool RegisterDefaultSignalHandler();
+  static void EnsureInitialized();
+
+  static void ForkingCleanup();
 
  private:
   V8();

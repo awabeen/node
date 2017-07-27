@@ -40,6 +40,7 @@ class V8_PLATFORM_EXPORT DefaultPlatform : public NON_EXPORTED_BASE(Platform) {
   void SetThreadPoolSize(int thread_pool_size);
 
   void EnsureInitialized();
+  void ForkingCleanup();
 
   bool PumpMessageLoop(
       v8::Isolate* isolate,

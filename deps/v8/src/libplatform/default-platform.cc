@@ -72,6 +72,19 @@ DefaultPlatform::DefaultPlatform(IdleTaskSupport idle_task_support)
       thread_pool_size_(0),
       idle_task_support_(idle_task_support) {}
 
+void DefaultPlatform::ForkingCleanup() {
+  base::LockGuard<base::Mutex> guard(&lock_);
+  queue_.PurgeWorkers();
+  if (initialized_) {
+    for (auto i = thread_pool_.begin(); i != thread_pool_.end(); ++i) {
+      delete *i;
+    }
+  }
+  thread_pool_.clear();
+  queue_.StopPurgeWorkers();
+  initialized_ = false;
+}
+
 DefaultPlatform::~DefaultPlatform() {
   if (tracing_controller_) {
     tracing_controller_->StopTracing();
