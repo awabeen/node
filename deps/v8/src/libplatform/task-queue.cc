@@ -9,7 +9,7 @@
 namespace v8 {
 namespace platform {
 
-TaskQueue::TaskQueue() : process_queue_semaphore_(0), terminated_(false) {}
+TaskQueue::TaskQueue() : process_queue_semaphore_(0), terminated_(false), purging_(false) {}
 
 
 TaskQueue::~TaskQueue() {
@@ -31,6 +31,10 @@ Task* TaskQueue::GetNext() {
   for (;;) {
     {
       base::LockGuard<base::Mutex> guard(&lock_);
+      if (purging_) {
+        process_queue_semaphore_.Signal();
+        return NULL;
+      }
       if (!task_queue_.empty()) {
         Task* result = task_queue_.front();
         task_queue_.pop();
@@ -40,11 +44,22 @@ Task* TaskQueue::GetNext() {
         process_queue_semaphore_.Signal();
         return NULL;
       }
+
     }
     process_queue_semaphore_.Wait();
   }
 }
 
+void TaskQueue::PurgeWorkers() {
+  base::LockGuard<base::Mutex> guard(&lock_);
+  purging_ = true;
+  process_queue_semaphore_.Signal();
+}
+
+void TaskQueue::StopPurgeWorkers() {
+  base::LockGuard<base::Mutex> guard(&lock_);
+  purging_ = false;
+}
 
 void TaskQueue::Terminate() {
   base::LockGuard<base::Mutex> guard(&lock_);
